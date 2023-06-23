@@ -28,8 +28,8 @@ const generateData = async (totalRows: number, numYears: number, growthRate: num
 
 
   let csvStream = format({ headers: fields });
-  let writeStream = fs.createWriteStream(`./data/output${v + 1}_${fileIndex}.csv`);
-  csvStream.pipe(writeStream).on('end', () => console.log(`output${v + 1}_${fileIndex}.csv has been written.`));
+  let writeStream = fs.createWriteStream(`./data/output${v + 1}.csv`);
+  csvStream.pipe(writeStream);
 
   for (const { id, percentage, campaignIds } of verticals) {
     const percToCalc = totalRows * percentage;
@@ -112,16 +112,15 @@ const generateData = async (totalRows: number, numYears: number, growthRate: num
         if (rowCount >= MAX_ROWS_PER_FILE) {
           csvStream.end();
 
-          fileIndex++;
+          v++;
           rowCount = 0;
 
           csvStream = format({ headers: fields });
-          writeStream = fs.createWriteStream(`./data/output${v + 1}_${fileIndex}.csv`);
-          csvStream.pipe(writeStream).on('end', () => console.log(`output${v + 1}_${fileIndex}.csv has been written.`));
+          writeStream = fs.createWriteStream(`./data/output${v + 1}.csv`);
+          csvStream.pipe(writeStream).on('end', () => console.log(`output${v + 1}.csv has been written.`));
         }
       }
     }
-    v++;
   }
   csvStream.end();
 };
