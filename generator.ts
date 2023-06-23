@@ -16,7 +16,9 @@ const verticals = [
   { id: 'vertical_8', percentage: 0.06, campaignIds: [25] },
 ];
 
-const maxRowsPerFile = 10;
+const MAX_ROWS_PER_FILE = 10;
+const NUMBER_OF_LINES = 100;
+const YEARS = 5;
 
 const generateData = async (totalRows: number, numYears: number, growthRate: number) => {
   let v = 0;
@@ -107,7 +109,7 @@ const generateData = async (totalRows: number, numYears: number, growthRate: num
 
         rowCount++;
 
-        if (rowCount >= maxRowsPerFile) {
+        if (rowCount >= MAX_ROWS_PER_FILE) {
           csvStream.end();
 
           fileIndex++;
@@ -124,4 +126,4 @@ const generateData = async (totalRows: number, numYears: number, growthRate: num
   csvStream.end();
 };
 
-generateData(100, 5, 1.15);
+generateData(NUMBER_OF_LINES, YEARS, 1.15);
