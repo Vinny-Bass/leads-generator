@@ -1,19 +1,16 @@
 #!/bin/bash
-S3_BUCKET=""
-DIR=""
 
-while true; do
-  for file in $(ls "$DIR"/output*.csv | sort -V)
-  do
-      if [[ $file =~ output([0-9]+).csv ]]; then
-          base=${BASH_REMATCH[1]}
-          next_version=$((base+1))
-          next_file="${DIR}/output${next_version}.csv"
-          if [ -f "$next_file" ]; then
-              aws s3 cp "$file" "$S3_BUCKET"
-              rm "$file"
-          fi
-      fi
-  done
-  sleep 5
+source .env
+
+DIR="./data"
+
+for file in "$DIR"/*.csv
+do
+  num_rows=$(wc -l < "$file")
+  echo $num_rows
+
+  if [ "$num_rows" -ge "$MAX_ROWS_PER_FILE" ]; then
+    aws s3 cp "$file" "s3://leads-892ec6b2-ea0e-4f8d-ad32-690bc209d3ac"
+    rm $file
+  fi
 done

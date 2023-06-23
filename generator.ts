@@ -1,9 +1,10 @@
 import * as fs from 'fs';
 import { faker } from '@faker-js/faker';
 import { format } from '@fast-csv/format';
-import { format as dateFormat, startOfYear, endOfYear } from 'date-fns';
+import { format as dateFormat } from 'date-fns';
 import * as crypto from "crypto-js";
 import fields from './fields';
+import 'dotenv/config'
 
 const verticals = [
   { id: 'vertical_1', percentage: 0.2, campaignIds: [1, 2, 3, 4] },
@@ -16,7 +17,7 @@ const verticals = [
   { id: 'vertical_8', percentage: 0.06, campaignIds: [25] },
 ];
 
-const MAX_ROWS_PER_FILE = 10;
+const MAX_ROWS_PER_FILE = parseInt(process.env.MAX_ROWS_PER_FILE || '10000');
 const NUMBER_OF_LINES = 100;
 const YEARS = 5;
 

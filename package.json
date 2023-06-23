@@ -12,7 +12,8 @@
   "dependencies": {
     "@fast-csv/format": "^4.3.5",
     "crypto-js": "^4.1.1",
-    "date-fns": "^2.30.0"
+    "date-fns": "^2.30.0",
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.0.2",
