@@ -21,108 +21,115 @@ const MAX_ROWS_PER_FILE = parseInt(process.env.MAX_ROWS_PER_FILE || '10000');
 const NUMBER_OF_LINES = 100;
 const YEARS = 5;
 
-const generateData = async (totalRows: number, numYears: number, growthRate: number) => {
+const generateData = async (totalRows: number, numYears: number, growthRate: number, vertical: string) => {
+  const verticalToUse = verticals.find(v => v.id === vertical)
+  if (verticalToUse === undefined) {
+    throw new Error('This vertical do not exists')
+  }
+
   let v = 0;
-  let fileIndex = 1;
   let rowCount = 0;
   const currentYear = new Date().getFullYear();
 
 
   let csvStream = format({ headers: fields });
-  let writeStream = fs.createWriteStream(`./data/output${v + 1}.csv`);
+  let writeStream = fs.createWriteStream(`./data/output${v + 1}_${vertical}.csv`);
   csvStream.pipe(writeStream);
 
-  for (const { id, percentage, campaignIds } of verticals) {
-    const percToCalc = totalRows * percentage;
-    const initialRowsValue = Math.floor(percToCalc * (1 - growthRate) / (1 - Math.pow(growthRate, numYears)));
+  const { id, percentage, campaignIds } = verticalToUse;
+  const percToCalc = totalRows * percentage;
+  const initialRowsValue = Math.floor(percToCalc * (1 - growthRate) / (1 - Math.pow(growthRate, numYears)));
 
-    let rowsThisYear = initialRowsValue;
+  let rowsThisYear = initialRowsValue;
 
-    for (let y = 0; y < numYears; y++) {
-      if (y > 0) {
-        rowsThisYear = Math.ceil(rowsThisYear * growthRate)
+  for (let y = 0; y < numYears; y++) {
+    if (y > 0) {
+      rowsThisYear = Math.ceil(rowsThisYear * growthRate)
+    }
+
+    const email = faker.internet.email();
+    const mobilephone = faker.phone.number('##########');
+    const email_md5 = crypto.MD5(email).toString();
+    const campaignId = faker.helpers.arrayElement(campaignIds);
+
+
+    for (let i = 0; i < rowsThisYear; i++) {
+      const lead_date = new Date(currentYear - numYears + y, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28));
+      const row = {
+        id: faker.string.uuid(),
+        firstname: faker.person.firstName(),
+        lastname: faker.person.lastName(),
+        email,
+        email_md5,
+        email_domain: email.split('@')[1],
+        address1: faker.location.streetAddress(),
+        address2: faker.location.streetAddress(),
+        city: faker.location.city(),
+        state: faker.location.state({ abbreviated: true }),
+        zip: faker.location.zipCode('#####'),
+        country: faker.location.country(),
+        homephone: faker.phone.number('##########'),
+        workphone: faker.phone.number('##########'),
+        mobilephone,
+        phone_md5: crypto.MD5(mobilephone).toString(),
+        dateofbirth: dateFormat(faker.date.birthdate({ min: 30, max: 90, mode: 'age' }), 'yyyy-MM-dd HH:mm:ss'),
+        gender: faker.helpers.arrayElement(['Male', 'Female', 'Other']),
+        language: faker.helpers.arrayElement(['en', 'es']),
+        own_rent: faker.helpers.arrayElement(['own', 'rent']),
+        income: faker.finance.amount(50000, 100000, 2),
+        pay_cycle: faker.helpers.arrayElement(['weekly', 'bi-weekly', 'monthly']),
+        employer: faker.company.name(),
+        employ_start_date: dateFormat(faker.date.past({ years: 5 }), 'yyyy-MM-dd HH:mm:ss'),
+        military: faker.helpers.arrayElement(['Yes', 'No']),
+        checking: faker.helpers.arrayElement(['Yes', 'No']),
+        debt: faker.finance.amount(0, 10000, 2),
+        homeowner: faker.helpers.arrayElement(['Yes', 'No']),
+        education: faker.helpers.arrayElement(['High School', 'College', 'Graduate']),
+        auto: faker.helpers.arrayElement(['Yes', 'No']),
+        make: faker.vehicle.manufacturer(),
+        model: faker.vehicle.model(),
+        model_year: faker.date.between({ from: '2000-01-01', to: '2020-12-31' }).getFullYear(),
+        hinsurance: faker.helpers.arrayElement(['Yes', 'No']),
+        medical: faker.helpers.arrayElement(['Yes', 'No']),
+        prescription: faker.helpers.arrayElement(['Yes', 'No']),
+        diabetic: faker.helpers.arrayElement(['Yes', 'No']),
+        travel: faker.helpers.arrayElement(['Yes', 'No']),
+        ip: faker.internet.ip(),
+        url: faker.internet.url(),
+        lead_date: dateFormat(lead_date, 'yyyy-MM-dd HH:mm:ss'),
+        timestamp: new Date().toISOString(),
+        jornaya_leadid: faker.string.uuid(),
+        trustedform_cert_url: `https://cert.trustedform.com/${email_md5}`,
+        lp_campaign_id: campaignId,
+        lp_supplier_id: campaignId + 1000,
+        lp_cost: faker.finance.amount(1, 100, 2),
+        lp_revenue: faker.finance.amount(1, 200, 2),
+        lp_vertical: id,
+      };
+
+      if (!csvStream.write(row)) {
+        await new Promise(resolve => csvStream.once('drain', resolve));
       }
 
-      const email = faker.internet.email();
-      const mobilephone = faker.phone.number('##########');
-      const email_md5 = crypto.MD5(email).toString();
-      const campaignId = faker.helpers.arrayElement(campaignIds);
+      rowCount++;
 
+      if (rowCount >= MAX_ROWS_PER_FILE) {
+        csvStream.end();
 
-      for (let i = 0; i < rowsThisYear; i++) {
-        const lead_date = new Date(currentYear - numYears + y, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28));
-        const row = {
-          id: faker.string.uuid(),
-          firstname: faker.person.firstName(),
-          lastname: faker.person.lastName(),
-          email,
-          email_md5,
-          email_domain: email.split('@')[1],
-          address1: faker.location.streetAddress(),
-          address2: faker.location.streetAddress(),
-          city: faker.location.city(),
-          state: faker.location.state({ abbreviated: true }),
-          zip: faker.location.zipCode('#####'),
-          country: faker.location.country(),
-          homephone: faker.phone.number('##########'),
-          workphone: faker.phone.number('##########'),
-          mobilephone,
-          phone_md5: crypto.MD5(mobilephone).toString(),
-          dateofbirth: dateFormat(faker.date.birthdate({ min: 30, max: 90, mode: 'age' }), 'yyyy-MM-dd HH:mm:ss'),
-          gender: faker.helpers.arrayElement(['Male', 'Female', 'Other']),
-          language: faker.helpers.arrayElement(['en', 'es']),
-          own_rent: faker.helpers.arrayElement(['own', 'rent']),
-          income: faker.finance.amount(50000, 100000, 2),
-          pay_cycle: faker.helpers.arrayElement(['weekly', 'bi-weekly', 'monthly']),
-          employer: faker.company.name(),
-          employ_start_date: dateFormat(faker.date.past({ years: 5 }), 'yyyy-MM-dd HH:mm:ss'),
-          military: faker.helpers.arrayElement(['Yes', 'No']),
-          checking: faker.helpers.arrayElement(['Yes', 'No']),
-          debt: faker.finance.amount(0, 10000, 2),
-          homeowner: faker.helpers.arrayElement(['Yes', 'No']),
-          education: faker.helpers.arrayElement(['High School', 'College', 'Graduate']),
-          auto: faker.helpers.arrayElement(['Yes', 'No']),
-          make: faker.vehicle.manufacturer(),
-          model: faker.vehicle.model(),
-          model_year: faker.date.between({ from: '2000-01-01', to: '2020-12-31' }).getFullYear(),
-          hinsurance: faker.helpers.arrayElement(['Yes', 'No']),
-          medical: faker.helpers.arrayElement(['Yes', 'No']),
-          prescription: faker.helpers.arrayElement(['Yes', 'No']),
-          diabetic: faker.helpers.arrayElement(['Yes', 'No']),
-          travel: faker.helpers.arrayElement(['Yes', 'No']),
-          ip: faker.internet.ip(),
-          url: faker.internet.url(),
-          lead_date: dateFormat(lead_date, 'yyyy-MM-dd HH:mm:ss'),
-          timestamp: new Date().toISOString(),
-          jornaya_leadid: faker.string.uuid(),
-          trustedform_cert_url: `https://cert.trustedform.com/${email_md5}`,
-          lp_campaign_id: campaignId,
-          lp_supplier_id: campaignId + 1000,
-          lp_cost: faker.finance.amount(1, 100, 2),
-          lp_revenue: faker.finance.amount(1, 200, 2),
-          lp_vertical: id,
-        };
+        v++;
+        rowCount = 0;
 
-        if (!csvStream.write(row)) {
-          await new Promise(resolve => csvStream.once('drain', resolve));
-        }
-
-        rowCount++;
-
-        if (rowCount >= MAX_ROWS_PER_FILE) {
-          csvStream.end();
-
-          v++;
-          rowCount = 0;
-
-          csvStream = format({ headers: fields });
-          writeStream = fs.createWriteStream(`./data/output${v + 1}.csv`);
-          csvStream.pipe(writeStream).on('end', () => console.log(`output${v + 1}.csv has been written.`));
-        }
+        csvStream = format({ headers: fields });
+        writeStream = fs.createWriteStream(`./data/output${v + 1}_${vertical}.csv`);
+        csvStream.pipe(writeStream).on('end', () => console.log(`output${v + 1}.csv has been written.`));
       }
     }
   }
+
   csvStream.end();
 };
 
-generateData(NUMBER_OF_LINES, YEARS, 1.15);
+var args = process.argv.slice(2);
+var verticalArg = args[0].split('=');
+var vertical = verticalArg[1];
+generateData(NUMBER_OF_LINES, YEARS, 1.15, vertical);
