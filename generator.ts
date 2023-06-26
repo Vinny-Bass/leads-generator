@@ -18,7 +18,7 @@ const verticals = [
 ];
 
 const MAX_ROWS_PER_FILE = parseInt(process.env.MAX_ROWS_PER_FILE || '10000');
-const NUMBER_OF_LINES = 100;
+const NUMBER_OF_LINES = 500e6;
 const YEARS = 5;
 
 const generateData = async (totalRows: number, numYears: number, growthRate: number, vertical: string) => {
