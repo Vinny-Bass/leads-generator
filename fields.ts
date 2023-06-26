@@ -1,5 +1,4 @@
 const fields = [
-  "id",
   "firstname",
   "lastname",
   "email",

@@ -56,7 +56,6 @@ const generateData = async (totalRows: number, numYears: number, growthRate: num
     for (let i = 0; i < rowsThisYear; i++) {
       const lead_date = new Date(currentYear - numYears + y, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28));
       const row = {
-        id: faker.string.uuid(),
         firstname: faker.person.firstName(),
         lastname: faker.person.lastName(),
         email,
