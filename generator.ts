@@ -43,8 +43,6 @@ const generateData = async (totalRows: number, numYears: number, growthRate: num
         rowsThisYear = Math.ceil(rowsThisYear * growthRate)
       }
 
-      const lead_date = new Date(currentYear - numYears + y, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28));
-
       const email = faker.internet.email();
       const mobilephone = faker.phone.number('##########');
       const email_md5 = crypto.MD5(email).toString();
@@ -52,6 +50,7 @@ const generateData = async (totalRows: number, numYears: number, growthRate: num
 
 
       for (let i = 0; i < rowsThisYear; i++) {
+        const lead_date = new Date(currentYear - numYears + y, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28));
         const row = {
           id: faker.string.uuid(),
           firstname: faker.person.firstName(),
@@ -76,7 +75,7 @@ const generateData = async (totalRows: number, numYears: number, growthRate: num
           income: faker.finance.amount(50000, 100000, 2),
           pay_cycle: faker.helpers.arrayElement(['weekly', 'bi-weekly', 'monthly']),
           employer: faker.company.name(),
-          employ_start_date: dateFormat(faker.date.past(5), 'yyyy-MM-dd HH:mm:ss'),
+          employ_start_date: dateFormat(faker.date.past({ years: 5 }), 'yyyy-MM-dd HH:mm:ss'),
           military: faker.helpers.arrayElement(['Yes', 'No']),
           checking: faker.helpers.arrayElement(['Yes', 'No']),
           debt: faker.finance.amount(0, 10000, 2),
@@ -85,7 +84,7 @@ const generateData = async (totalRows: number, numYears: number, growthRate: num
           auto: faker.helpers.arrayElement(['Yes', 'No']),
           make: faker.vehicle.manufacturer(),
           model: faker.vehicle.model(),
-          model_year: faker.date.between('2000-01-01', '2020-12-31').getFullYear(),
+          model_year: faker.date.between({ from: '2000-01-01', to: '2020-12-31' }).getFullYear(),
           hinsurance: faker.helpers.arrayElement(['Yes', 'No']),
           medical: faker.helpers.arrayElement(['Yes', 'No']),
           prescription: faker.helpers.arrayElement(['Yes', 'No']),
